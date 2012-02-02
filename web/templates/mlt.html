@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>{{item['title']}}</title>
+		<link type="text/css" href="static/css/redmond/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+		<script type="text/javascript" src="static/js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="static/js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript">
+			$(function(){
+			}
+		</script>
+		<style type="text/css">
+			/*demo page css*/
+			body{margin: 50px;}
+			.demoHeaders { margin-top: 2em; }
+			#dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
+			#dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
+			ul#icons {margin: 0; padding: 0;}
+			ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+			ul#icons span.ui-icon {float: left; margin: 0 4px;}
+			.groupValue
+			{
+				font-family:Arial,sans-serif;
+				font-weight:bold;
+				font-size:1.2em;
+			}
+			.highlight
+			{
+				color:#333333;
+				padding-left:20px;
+			}
+			.date
+			{
+				color:#666666
+			}
+			.mlt a
+			{
+				color:#00FF00;
+				text-decoration: none
+			}
+			
+                              .title
+                              {
+                                font-family:monospace;
+                                color:black;
+                                font-weight:bold;
+                                font-size:13px;
+                              }
+		</style>	
+	</head>
+	<body>
+		<div id="header">
+			<a class="title" href="{{escape(item['link'])}}">{{item['title']}}</a>
+			<br>
+			<a class="title" href="{{escape(item['feedlink'])}}">{{item['feed']}}</a>
+			<br>
+			<div class="highlight">
+			{{item['summary'][:500]}}...
+                      </div>
+                      <br>
+
+                      {% if 'entity' in item %}
+                      <div class="entities">
+                      {% for entity in item['entity'] %}
+                          <a class="title" href="/search?q={{url_escape('"'+ entity +'"')}}">{{entity}}</a>&nbsp;
+                      {% end %}
+                      </div>
+                      {% end %}
+
+              </div>
+              <div id="results" style="margin-top:20px">
+                      <div id="resultsleft" style="float:left;width:50%;background:white;color:black">
+				<div style="background:white;color:black;padding:10px">
+				{% if "left" in results %}
+					{% for result in results["left"] %}
+						<a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a>&nbsp;<span class="mlt"><a href="/mlt?id={{url_escape(result['id'])}}">+</a></span>						<br>
+					{% end %}		
+				{% end %}
+				</div>
+				
+			</div>
+			<div id="resultsright" style="float:right;width:50%;background:white;color:black">
+				<div style="background:white;color:black;padding:10px">
+
+				{% if "right" in results %}
+					{% for result in results["right"] %}
+						<a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a>&nbsp;<span class="mlt"><a href="/mlt?id={{url_escape(result['id'])}}">+</a></span>	
+						<br>
+					{% end %}		
+				{% end %}
+				</div>
+			</div>
+		</div>
+		<div id="footer">
+		</div>
+
+	</body>
+</html>
+
+
+

@@ -1,0 +1,144 @@
+{% autoescape None %} 
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+                {% if len(query)>0 %}
+                <title>News Search - {{query}}</title>
+
+                {% else %}
+                  <title>News Search</title>
+
+                {% end %}
+                		<link type="text/css" href="static/css/redmond/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+		<script type="text/javascript" src="static/js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="static/js/jquery-ui-1.8.16.custom.min.js"></script>
+	        <script>
+	$(function() {
+
+                $( "#q" ).autocomplete({
+			source: "autosuggest",
+			minLength: 1,
+			select: function( event, ui ) {
+			}
+		});
+	});
+	</script>
+                      
+		<style type="text/css">
+			/*demo page css*/
+                        body{margin: 50px;}
+                        /*.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }*/
+			.demoHeaders { margin-top: 2em; }
+			#dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
+			#dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
+			ul#icons {margin: 0; padding: 0;}
+			ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+			ul#icons span.ui-icon {float: left; margin: 0 4px;}
+			.groupValue
+			{
+				font-family:Arial,sans-serif;
+				font-weight:bold;
+				font-size:1.2em;
+                              
+                        }
+                        .entities
+                        {
+                          padding-left:20px;
+                          font-size:0.8em;
+                        }
+			.highlight
+			{
+				color:#333333;
+				padding-left:20px;
+			}
+			.date
+			{
+				color:#666666
+			}
+			.mlt a
+			{
+				color:#00FF00;
+				text-decoration: none
+                              }
+                              .title
+                              {
+                                font-family:monospace;
+                                color:black;
+                                font-weight:bold;
+                                font-size:13px;
+                              }
+		</style>	
+	</head>
+	<body>
+		<div id="header" style="width:100%">
+			<h1>Political News</h1>
+			<form method="get" action="search">
+			    <input id="q" type="text" size="80" name="q" value="{{escape(query)}}"><input type="submit" value="Search">
+                            
+
+
+                          </form>
+
+                          {% if 'left' in results %}
+                            {% if hasattr(results['left'],'spellcheck') and 'suggestions' in results['left'].spellcheck %}
+                              {% for term,suggestion in results['left'].spellcheck['suggestions'].iteritems() %}
+                              Searched for <b>{{escape(term)}}</b>.  Did you mean 
+                                {% for sugg in suggestion['suggestion'] %}
+                                  <a href="/search?q={{url_escape(sugg)}}">{{escape(sugg)}}</a>&nbsp;
+                                  {% end %}
+                                  ?<br>
+                              {% end %}
+                            {% end %}
+                          {% end %}
+
+
+
+		</div>
+                <div id="results" style="margin-top:20px">
+                  <div id="facets" style="float:left;width:200px;background:white;color:black"><br>
+
+                      {% if 'facets' in results %}
+                        {% for facet_name in results['facets']%}   
+                         
+			    	<a class="title" href="/search?q={{url_escape(query +' "'+ facet_name +'"')}}">{{facet_name}}</a><br>
+					{% end %}
+                        {% end %}
+
+                      </div>
+			<div id="resultsleft" style="float:left;width:360px;background:white;color:black">
+			      <div style="background:white;color:black;padding:10px">
+                                        {% if 'left' in results %}
+                                        
+                                        						{% for result in results['left'].results %}
+                                                        <a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a>&nbsp;
+							<span class="mlt"><a href="/mlt?id={{url_escape(result['id'])}}">+</a></span>
+                                                        <br>
+                                                        <br>
+                                                        {% end %}
+
+                                        {% end %}
+				</div>			
+			</div>
+			<div id="resultsright" style="float:left;width:360px;background:white;color:black">
+				<div style="background:white;color:black;padding:10px">
+                                         {% if 'right' in results %}
+
+                                  
+                                        						{% for result in results['right'].results %}
+                                                        <a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a>&nbsp;
+							<span class="mlt"><a href="/mlt?id={{url_escape(result['id'])}}">+</a></span>
+                                                        <br>
+                                                        <br>
+                                                        {% end %}
+                                                       
+                                      {% end %}	
+				</div>		
+			</div>
+		</div>
+		<div id="footer">
+		</div>
+	</body>
+</html>
+
+
