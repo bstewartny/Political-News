@@ -1,0 +1,7 @@
+/lib
+/classes
+*.jar
+.DS_Store
+pom.xml
+*.pyc
+
