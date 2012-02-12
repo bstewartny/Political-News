@@ -15,6 +15,21 @@ class SearchHandler(tornado.web.RequestHandler):
 		results=self.search(query)	
 		self.render('templates/index.html',query=query,results=results)
 
+        def get_entities(self,query):
+            client=solr.Solr(SOLR_URL)
+
+            entitysearch=solr.SearchHandler(client,'/entities')
+
+            entity_results=entitysearch(query)
+
+            entities=[]
+
+            if 'entity' in entity_results.facet_counts['facet_fields']:
+              for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems():
+                entities.append(key)
+
+            return entities
+
 	def search(self,query):
 		client=solr.Solr(SOLR_URL)
                             
@@ -35,39 +50,15 @@ class SearchHandler(tornado.web.RequestHandler):
                   if(len(left_results.results)>0):
                     top_result=left_results.results[0]
 
-		# merge highlights
-                #merge_highlights(left_results,['summary','title'])
-	        #merge_highlights(right_results,['summary','title'])
-	
-                facets=[]
-
-                facet_fields=left_results.facet_counts['facet_fields']
-  
-                left_facet={}
-                if 'entity' in facet_fields:
-                  left_facets=facet_fields['entity']
-
-                facet_fields=right_results.facet_counts['facet_fields']
-  
-                right_facet={}
-                if 'entity' in facet_fields:
-                  right_facets=facet_fields['entity']
-
-                for key,value in left_facets.iteritems():
-                  if key in right_facets:
-                    right_facets[key]=right_facets[key]+value
-                  else:
-                    right_facets[key]=value
-
-                facets=sorted(right_facets.iteritems(),key=operator.itemgetter(1))
-                facets.reverse()
-
-                facets=[n for (n,v) in facets]
+                facets=self.get_entities('*:*') 
 
                 result= {'left':left_results,'right':right_results,'facets':facets}
+                
                 if top_result is not None:
                   result['top']=top_result
+
                 return result
+
 def merge_highlights(results,fieldnames):
 	# merge highlights
         for doc in results.results:
