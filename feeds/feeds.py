@@ -41,6 +41,9 @@ def is_substr(s,a):
           return True
   return False
 
+invalid_entities=['continue reading','written by','united states','new york','new york city','new york times','washington post','raw story','fox news']
+
+
 def unique_entities(a):
   u=[]
   a=list(set(a))
@@ -49,12 +52,14 @@ def unique_entities(a):
   a=[s for s in a if len(s.split())>1]
   # remove any entities more than 3 words
   a=[s for s in a if len(s.split())<4]
-  # TODO: remove entities where any of the words are noise words, and also filter out some standard phrases:
-  # "Written By", "Continue Reading", etc.
-
+  
   a.sort(lambda x,y:cmp(len(y),len(x)))
+  
+  a=[x for x in a if not is_substr(x,a)]
 
-  return [x for x in a if not is_substr(x,a)]
+  a=[s for s in a if not s.lower() in invalid_entities]
+
+  return a
 
 def get_entities(text):
   sentences = nltk.sent_tokenize(text)

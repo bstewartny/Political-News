@@ -26,7 +26,15 @@ class SearchHandler(tornado.web.RequestHandler):
                 
                 # get right wing results
                 right_results=searchright(query)
-                
+
+                top_result=None
+              
+                if(len(right_results.results)>0):
+                  top_result=right_results.results[0]
+                else:
+                  if(len(left_results.results)>0):
+                    top_result=left_results.results[0]
+
 		# merge highlights
                 #merge_highlights(left_results,['summary','title'])
 	        #merge_highlights(right_results,['summary','title'])
@@ -56,8 +64,10 @@ class SearchHandler(tornado.web.RequestHandler):
 
                 facets=[n for (n,v) in facets]
 
-                return {'left':left_results,'right':right_results,'facets':facets}
-
+                result= {'left':left_results,'right':right_results,'facets':facets}
+                if top_result is not None:
+                  result['top']=top_result
+                return result
 def merge_highlights(results,fieldnames):
 	# merge highlights
         for doc in results.results:

@@ -810,7 +810,7 @@
         <str name="group">false</str>
         <str name="group.field">feed</str>
         <int name="group.limit">4</int>
-        <str name="fl">id,date,link,title,entity,feed</str>
+        <str name="fl">id,date,link,title,entity,feed,summary</str>
         <str name="facet.range">date</str>
         <str name="f.date.facet.range.start">NOW/YEAR-1YEARS</str>
         <str name="f.date.facet.range.end">NOW</str>
@@ -842,7 +842,7 @@
         <str name="group">false</str>
         <str name="group.field">feed</str>
         <int name="group.limit">4</int>
-        <str name="fl">id,date,link,title,entity,feed</str>
+        <str name="fl">id,date,link,title,entity,feed,summary</str>
         <str name="facet.range">date</str>
         <str name="f.date.facet.range.start">NOW/YEAR-1YEARS</str>
         <str name="f.date.facet.range.end">NOW</str>
