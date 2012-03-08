@@ -1,0 +1,24 @@
+set max # of recent items to load per feed
+fix date parsing (use NOW when date is missing)
+dont show top if missing 
+fix top result display when not showing title or summary
+fix summary cleaner it does not always work
+fix exclude top item from left/right search - not working
+default home page (no search):
+  pick top item by:
+    look at top N facets
+      find best recent item for top facet over short time
+  show word cloud
+    look at top N facets over short time
+      get top headlines by facet and form word cloud based on headline frequency
+add keyboard support
+  next item
+  open in tab or window
+autosuggest search - show drop down
+twitter integration
+  show related tweets for item (and/or facets)
+  share item on twitter
+more like this:
+  show similar items
+filter by source
+
