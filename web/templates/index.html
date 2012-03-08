@@ -122,7 +122,7 @@
               <li class="nav-header">Topics</li>
               {% if 'facets' in results %}
                 {% for facet_name in results['facets']%}   
-                  <li><a class="title" href="/search?q={{url_escape(query +' "'+ facet_name +'"')}}">{{facet_name}}</a></li>
+                  <li><a class="title" href="/search?q={{url_escape('"'+ facet_name +'"')}}">{{facet_name}}</a></li>
                 {% end %}
               {% end %}
             </ul>
@@ -131,18 +131,19 @@
         {% if 'top' in results %}
         <div class="span9">
           <div class="hero-unit">
-            <h2>{{escape(results['top']['title'])}}</h2>
+            <h2><a class="title" href="{{escape(results['top']['link'])}}">{{escape(results['top']['title'])}}</a></h2>
             <blockquote>
-              <p>{{results['top']['summary'][:400]}}...</p>
+              <p>{{results['top']['clean_summary']}}</p>
               <small>{{results['top']['feed']}}</small>
             </blockquote>
           </div>
           <div class="row-fluid">
             <div class="span6">
            {% if 'left' in results %}
-          {% for result in results['left'].results %}
+          {% for result in results['left'] %}
           <h3><a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a></h3>
               <blockquote>
+                <p>{{result['clean_summary']}}</p>
                 <small>{{result['feed']}}</small>
               </blockquote>
           {% end %}
@@ -150,9 +151,10 @@
             </div>
             <div class="span6">
            {% if 'right' in results %}
-          {% for result in results['right'].results %}
+          {% for result in results['right'] %}
           <h3><a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a></h3>
               <blockquote>
+                <p>{{result['clean_summary']}}</p>
                 <small>{{result['feed']}}</small>
               </blockquote>
           {% end %}

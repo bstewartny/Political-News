@@ -790,7 +790,7 @@
   <requestHandler name="/entities" class="solr.SearchHandler">
     <lst name="defaults">
       <str name="q">*:*</str>
-      <str name="fq">date:[NOW-7DAYS TO NOW]</str>
+      <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
     </lst>
     <lst name="invariants">
        <str name="echoParams">explicit</str>
@@ -803,70 +803,51 @@
   </requestHandler>
     
     
-    <requestHandler name="/searchleft" class="solr.SearchHandler">
+    
+
+    <requestHandler name="/searchtop" class="solr.SearchHandler">
     <lst name="defaults">
       <str name="q">*:*</str>
+      <str name="defType">edismax</str>
+      <str name="qf">title^5.0 summary^2.0 body^1.0</str>
     </lst>
     <lst name="invariants">
 
        <str name="echoParams">explicit</str>
+       <int name="rows">1</int>
+       <!--<str name="fq">date:[NOW-3DAYS TO NOW]</str>-->
+       <str name="sort">date desc</str>
+        <str name="fl">id,date,link,title,entity,feed,summary</str>
+      </lst>
+  </requestHandler>
+    
+    <requestHandler name="/searchleft" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="q">*:*</str>
+      <str name="defType">edismax</str>
+      <str name="qf">title^5.0 summary^2.0 body^1.0</str>
+    </lst>
+    <lst name="invariants">
+       <str name="echoParams">explicit</str>
        <int name="rows">8</int>
-	<str name="hl.fragsize">200</str>
-	<str name="hl.fragmenter">regex</str>
-	<str name="hl.regex.slop">0.5</str>
-	<str name="hl.regex.pattern">^[A-Z][^\.!\?]{20,600}[\.!\?]$</str>
-        <str name="hl">false</str>
-        <str name="hl.fl">summary,title</str>
-	<str name="hl.simple.pre"><![CDATA[<b style="background:yellow">]]></str>
-        <str name="hl.simple.post"><![CDATA[</b>]]></str>
-        <int name="facet.mincount">2</int>
-        <str name="facet">false</str>
-        <str name="facet.field">entity</str>
-        <str name="facet.field">feed</str>
         <str name="fq">wing:left</str>
         <int name="facet.limit">25</int>      
-        <str name="fq">date:[NOW-7DAYS TO NOW]</str>
-        <str name="group">false</str>
-        <str name="group.field">feed</str>
-        <int name="group.limit">1</int>
+        <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
-        <str name="facet.range">date</str>
-        <str name="f.date.facet.range.start">NOW/YEAR-1YEARS</str>
-        <str name="f.date.facet.range.end">NOW</str>
-        <str name="f.date.facet.range.gap">+1DAY</str>
       </lst>
   </requestHandler>
 <requestHandler name="/searchright" class="solr.SearchHandler">
 <lst name="defaults">
       <str name="q">*:*</str>
+      <str name="defType">edismax</str>
+      <str name="qf">title^5.0 summary^2.0 body^1.0</str>
     </lst>
     <lst name="invariants">
-
        <str name="echoParams">explicit</str>
        <int name="rows">8</int>
-	<str name="hl.fragsize">200</str>
-	<str name="hl.fragmenter">regex</str>
-	<str name="hl.regex.slop">0.5</str>
-	<str name="hl.regex.pattern">^[A-Z][^\.!\?]{20,600}[\.!\?]$</str>
-        <str name="hl">false</str>
-        <str name="hl.fl">summary,title</str>
-	<str name="hl.simple.pre"><![CDATA[<b style="background:yellow">]]></str>
-        <str name="hl.simple.post"><![CDATA[</b>]]></str>
-        <int name="facet.mincount">2</int>
-        <str name="facet">false</str>
-        <str name="facet.field">entity</str>
-        <str name="facet.field">feed</str>
         <str name="fq">wing:right</str>
-        <str name="fq">date:[NOW-7DAYS TO NOW]</str>
-        <int name="facet.limit">25</int>      
-        <str name="group">false</str>
-        <str name="group.field">feed</str>
-        <int name="group.limit">1</int>
+        <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
-        <str name="facet.range">date</str>
-        <str name="f.date.facet.range.start">NOW/YEAR-1YEARS</str>
-        <str name="f.date.facet.range.end">NOW</str>
-        <str name="f.date.facet.range.gap">+1DAY</str>
       </lst>
 
 

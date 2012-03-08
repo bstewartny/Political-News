@@ -498,6 +498,7 @@
    <field name="link" type="string" indexed="true" stored="true"/>
    <field name="title" type="text_general" indexed="true" stored="true" termVectors="true" termPositions="true" termOffsets="true"/>
    <field name="summary" type="text_general" indexed="true" stored="true" termVectors="true" termPositions="true" termOffsets="true"/>
+   <field name="body" type="text_general" indexed="true" stored="true" termVectors="true" termPositions="true" termOffsets="true"/>
    <field name="date" type="date" indexed="true" stored="true" default="NOW"/>
    <field name="wing" type="string" indexed="true" stored="true"/>
    <field name="feed" type="string" indexed="true" stored="true"/>
@@ -505,7 +506,7 @@
    
    <field name="author" type="string" indexed="true" stored="true"/>
    <field name="entity" type="string" indexed="true" stored="true" multiValued="true"/>
-
+  
       <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
    <field name="text" type="text_general" indexed="true" stored="false" multiValued="true" termVectors="true" termPositions="true" termOffsets="true"/>
