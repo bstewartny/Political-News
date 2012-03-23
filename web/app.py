@@ -8,6 +8,10 @@ import simplejson
 import operator
 
 SOLR_URL='http://localhost:8983/solr'
+client=solr.Solr(SOLR_URL) 
+
+def get_handler(name):
+  return solr.SearchHandler(client,name)
 
 class SearchHandler(tornado.web.RequestHandler):
   
@@ -24,8 +28,7 @@ class SearchHandler(tornado.web.RequestHandler):
     return result
 
   def get_top_result(self,query):
-    client=solr.Solr(SOLR_URL) 
-    topsearch=solr.SearchHandler(client,'/searchtop')
+    topsearch=get_handler('/searchtop')
     topsearch_results=topsearch(query)
     if len(topsearch_results.results)>0:
       return self.clean_result_summary(topsearch_results.results[0])
@@ -33,24 +36,19 @@ class SearchHandler(tornado.web.RequestHandler):
       return None
 
   def get_entities(self,query):
-    client=solr.Solr(SOLR_URL) 
-    entitysearch=solr.SearchHandler(client,'/entities')
+    entitysearch=get_handler('/entities')
     entity_results=entitysearch(query)
-    return []
-    #return [key for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems()]
-    
-    #entities=[]
-
-    #if 'entity' in entity_results.facet_counts['facet_fields']:
-    #  for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems():
-    #    entities.append(key)
-
-    #return entities
-
+    return [key for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems()]
+  
   def search(self,query):
-    client=solr.Solr(SOLR_URL)
-    searchleft=solr.SearchHandler(client,'/searchleft')
-    searchright=solr.SearchHandler(client,'/searchright')
+    facets=self.get_entities('*:*') 
+    searchleft=get_handler('/searchleft')
+    searchright=get_handler('/searchright')
+    
+    if query is None or len(query)==0:
+        if len(facets)>0:
+          query='"' + '" OR "'.join(facets[:3])+'"'
+    
     top_result=self.get_top_result(query)
     # exclude top result from other searches (not working now for some reason)
     fq=None
@@ -66,29 +64,16 @@ class SearchHandler(tornado.web.RequestHandler):
       right_results=self.clean_results_summaries(searchright(query,fq=fq))
     else:
       right_results=self.clean_results_summaries(searchright(query))
-    # get top facets over all docs to show left-hand side topics
-    facets=self.get_entities('*:*') 
     result= {'left':left_results,'right':right_results,'facets':facets}
     if top_result is not None:
       result['top']=top_result
     return result
-
-def create_id_slug(s):
-  # strip out non-url and non-lucene friendly stuff...
-  bad_chars="'+-&|!(){}[]^\"~*?:\\"
-  s=s.strip().replace('http://','').replace('https://','')
-  for c in bad_chars:
-    s=s.replace(c,'_')
-  while '__' in s:
-    s=s.replace('__','_')
-  return s	
 	
 class AutoSuggestHandler(tornado.web.RequestHandler):
 
   def get(self):
     prefix=self.get_argument('term','')
-    client=solr.Solr(SOLR_URL)
-    terms_client=solr.SearchHandler(client,'/terms')
+    terms_client=get_handler('/terms')
     results=terms_client(terms_regex=prefix+'.*')
     json=[{'id':term,'label':term,'value':'"'+term+'"'} for term in sorted(results.terms['entity'].keys())]
     self.content_type = 'application/json'

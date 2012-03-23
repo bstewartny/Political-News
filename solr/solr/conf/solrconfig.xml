@@ -790,7 +790,7 @@
   <requestHandler name="/entities" class="solr.SearchHandler">
     <lst name="defaults">
       <str name="q">*:*</str>
-      <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
+      <str name="fq">date:[NOW-14DAYS TO NOW]</str>
     </lst>
     <lst name="invariants">
        <str name="echoParams">explicit</str>
@@ -832,6 +832,7 @@
        <int name="rows">8</int>
         <str name="fq">wing:left</str>
         <int name="facet.limit">25</int>      
+        <str name="sort">date desc</str>
         <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>
@@ -846,6 +847,8 @@
        <str name="echoParams">explicit</str>
        <int name="rows">8</int>
         <str name="fq">wing:right</str>
+        <str name="sort">date desc</str>
+        <int name="facet.limit">25</int>      
         <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>

@@ -4,12 +4,18 @@ import solr
 import time
 import datetime
 import feeddefs
-import urllib2
+#import urllib2
+import urllib3
+
 import re
 from readability.readability import Document 
 import subprocess
 import nltk
 import pytz
+from threading import Thread
+
+
+http=urllib3.PoolManager()
 
 INDEX_URL='http://localhost:8983/solr'
 
@@ -18,7 +24,7 @@ index=solr.Solr(INDEX_URL)
 invalid_entities=['tweet text',
     'white house','continue reading','written by','united states',
     'new york','new york city','new york times','washington post',
-    'raw story','fox news']
+    'raw story','fox news','associated press']
 
 def extract_entity_names(t):
   entity_names = []
@@ -30,21 +36,22 @@ def extract_entity_names(t):
               entity_names.extend(extract_entity_names(child))
               
   return entity_names
- 
-def is_substr(s,a):
+
+def is_substr(s,t):
+  if len(t)<len(s):
+    return False
+  else:
+    t=t.lower()
+    return ((not t==s) and (t.startswith(s) or t.endswith(s)))
+
+def has_substr(s,a):
   s=s.lower()
   for t in a:
-    if len(t)<len(s):
-      break
-    else:
-      t=t.lower()
-      if not t==s:
-        if t.startswith(s) or t.endswith(s):
-          return True
+    if is_substr(s,t):
+      return True
   return False
 
-
-def unique_entities(a):
+def filter_entities(a):
   u=[]
   a=list(set(a))
   # remove any single-word entities (too ambiguous in most cases)
@@ -52,21 +59,27 @@ def unique_entities(a):
   # remove any entities more than 3 words
   a=[s for s in a if len(s.split())<4]
   a.sort(lambda x,y:cmp(len(y),len(x)))
-  a=[x for x in a if not is_substr(x,a)]
+  a=[x for x in a if not has_substr(x,a)]
   a=[s for s in a if not s.lower() in invalid_entities]
   return a
 
 def get_entities(text):
+  print 'sent_tokenize'
   sentences = nltk.sent_tokenize(text)
+  print 'word_tokenize'
   tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+  print 'pos_tag'
   tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
+  print 'batch_ne_chunk'
   chunked_sentences = nltk.batch_ne_chunk(tagged_sentences, binary=True)
   
+  print 'extract_entity_names'
   entity_names=[]
   for tree in chunked_sentences:
     entity_names.extend(extract_entity_names(tree))
 
-  return unique_entities(entity_names)
+  print 'filter_entities'
+  return filter_entities(entity_names)
 
 def get_text_lynx(data):
   try:
@@ -85,26 +98,40 @@ def get_page_text(url):
   txt=''
   data=None
   try:
-    data = urllib2.urlopen(url).read()
-    if not data is None:
-      return strip_html_tags(Document(data).summary())
+    print 'Get url:',url
+    r=http.request('GET',url)
+    data=r.data
+    print 'Got url:',url
+    #data = urllib2.urlopen(url).read()
+    if not data is None and len(data)>0:
+      print 'get summary'
+      summary=Document(data).summary()
+      print 'got summary'
+      return strip_html_tags(summary)
   except:
     print 'error getting text from url: '+url
-    if not data is None:
+    if not data is None and len(data)>0:
       return get_text_lynx(data)
   return txt
 
-def create_id_slug(s):
-  # strip out non-URL and non-Lucene friendly stuff...
-  bad_chars="'+-&|!(){}[]^\"~*?:\\"
-  s=s.strip().replace('http://','').replace('https://','')
+bad_chars="'+-&|!(){}[]^\"~*?:\\"
+
+def replace_bad_chars(s):
   for c in bad_chars:
     s=s.replace(c,'_')
+  return s
+
+def compress_underscores(s):
   while '__' in s:
     s=s.replace('__','_')
-  return s	
+  return s
+
+def create_id_slug(s):
+  # strip out non-URL and non-Lucene friendly stuff...
+  return compress_underscores(replace_bad_chars(s.strip().replace('http://','').replace('https://','')))	
 
 def strip_html_tags(html):
+  print 'strip_html_tags'
   # just get appended text elements from HTML
   try:
     text="".join(BeautifulSoup(html,convertEntities=BeautifulSoup.HTML_ENTITIES).findAll(text=True))
@@ -180,6 +207,7 @@ def clean_summary(summary):
     return None
   clean_sentences=[]
   total_len=0
+  summary=summary.replace('&apos;','\'')
   for sentence in filter(is_clean_sentence,map(clean_sentence,nltk.sent_tokenize(summary))):
     if total_len+len(sentence) > max_summary_len and len(clean_sentences)>0:
       return ' '.join(clean_sentences)
@@ -219,9 +247,9 @@ def analyze_feed_item(item):
     item["summary"]=clean_summary(text)
     
   text = item["title"] + " "+text
-  
+  print 'get_entities' 
   item['entity']=get_entities(text)
-
+  print 'got_entities'
   return item
 
 def copy_attribute(source,dest,name):
@@ -277,6 +305,18 @@ def process_feeds(feeds):
   index_commit()
   print 'processed '+str(total)+' total items.'
 
+
+num_threads=4
+
 if __name__ == "__main__":
-  process_feeds(feeddefs.feeds)
+  feeds=feeddefs.feeds
+  batch_size=len(feeds)/num_threads
+  threads=[]
+  for i in range(0,num_threads):
+    batch=feeds[i*batch_size:(i*batch_size)+batch_size]
+    thread=Thread(target=process_feeds,args=(batch,))
+    thread.start()
+    threads.append(thread)
+
+  #process_feeds(feeddefs.feeds)
 
