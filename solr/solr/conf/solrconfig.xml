@@ -803,6 +803,20 @@
   </requestHandler>
     
     
+  <requestHandler name="/feeds" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="q">*:*</str>
+      <str name="fq">date:[NOW-14DAYS TO NOW]</str>
+    </lst>
+    <lst name="invariants">
+       <str name="echoParams">explicit</str>
+       <int name="rows">0</int>
+        <int name="facet.mincount">4</int>
+        <str name="facet">on</str>
+        <str name="facet.field">feed</str>
+        <int name="facet.limit">20</int>      
+      </lst>
+  </requestHandler>
     
 
     <requestHandler name="/searchtop" class="solr.SearchHandler">
@@ -829,9 +843,10 @@
     </lst>
     <lst name="invariants">
        <str name="echoParams">explicit</str>
-       <int name="rows">8</int>
+       <int name="rows">10</int>
         <str name="fq">wing:left</str>
-        <int name="facet.limit">25</int>      
+        <int name="facet.limit">20</int>     
+        <str name="facet.field">feed,feedkey,entity,entitykey</str>
         <str name="sort">date desc</str>
         <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
@@ -845,10 +860,11 @@
     </lst>
     <lst name="invariants">
        <str name="echoParams">explicit</str>
-       <int name="rows">8</int>
+       <int name="rows"10</int>
         <str name="fq">wing:right</str>
         <str name="sort">date desc</str>
-        <int name="facet.limit">25</int>      
+        <int name="facet.limit">20</int>     
+        <str name="facet.field">feed,feedkey,entity,entitykey</str>
         <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>

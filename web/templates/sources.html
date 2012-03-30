@@ -3,13 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    {% if len(query)>0 %}
-    <title>News Search - {{query}}</title>
-
-    {% else %}
-    <title>News Search</title>
-
-    {% end %}
+    <title>News Search - Sources</title>
 
     <meta name="description" content="">
     <meta name="author" content="">
@@ -103,72 +97,29 @@
           <a class="brand" href="#">Political News</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="/">Home</a></li>
+              <li><a href="/">Home</a></li>
               <li><a href="/topics">Topics</a></li>
-              <li><a href="/sources">Sources</a></li>
+              <li class="active"><a href="/sources">Sources</a></li>
               <li><a href="/about">About</a></li>
               <li><a href="/contact">Contact</a></li>
             </ul>
-            <form method="get" action="" class="navbar-search pull-right">
-              <input id="q" size="50" name="q" value="{{escape(query)}}" type="text" class="search-query" placeholder="Search">
+            <form method="get" action="/" class="navbar-search pull-right">
+              <input id="q" size="50" name="q" type="text" class="search-query" placeholder="Search">
             </form>
           </div>
         </div>
       </div>
     </div>
     <div class="container-fluid">
-      <ul class="breadcrumb">
-        <li>
-        <a href="/">Home</a> <span class="divider">/</span>
-        </li>
-        {% for breadcrumb in results['breadcrumbs'] %}
-        {% if breadcrumb['active'] %}
-            <li class="active">
-            {% else %}
-            <li>
-            {%end%}
-        <a href="{{breadcrumb['link']}}">{{breadcrumb['name']}}</a>
-        {% if not breadcrumb['active'] %}
-            <span class="divider">/</span>
-        {% end %}
-        </li>
-
-
-        {% end %}
-      </ul>
 
       
       <div class="row-fluid">
-        <div class="span3">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Popular Topics</li>
-                {% for topic in results['topics']%}   
-                  <li><a class="title" href="/topic/{{topic['key']}}">{{topic['name']}}</a></li>
+              {% for source in sources%}  
+                <div class="span3">
+                  <a class="title" href="/source/{{source['key']}}">{{source['name']}}</a>
+                </div>
                 {% end %}
-            </ul>
-            <ul class="nav nav-list">
-              <li class="nav-header">Popular Sources</li>
-                {% for source in results['sources']%}   
-                  <li><a class="title" href="/source/{{source['key']}}">{{source['name']}}</a></li>
-                {% end %}
-            </ul>
-          </div> 
         </div>
-        <div class="span9">
-          <div class="row-fluid">
-            <div class="span12">
-              {% for result in results['results'] %}
-                  <h3><a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a></h3>
-                  <blockquote>
-                    <p>{{result['clean_summary']}}</p>
-                    <small>{{result['feed']}}</small>
-                  </blockquote>
-              {% end %}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </body>
 </html>

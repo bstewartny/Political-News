@@ -24,7 +24,9 @@ index=solr.Solr(INDEX_URL)
 invalid_entities=['tweet text',
     'white house','continue reading','written by','united states',
     'new york','new york city','new york times','washington post',
-    'raw story','fox news','associated press']
+    'raw story','fox news','associated press','wall street','wall street journal','weekly standard']
+
+invalid_entities.extend([feed['feed'].lower() for feed in feeddefs.feeds])
 
 def extract_entity_names(t):
   entity_names = []
@@ -125,6 +127,12 @@ def compress_underscores(s):
   while '__' in s:
     s=s.replace('__','_')
   return s
+
+slug_pattern=re.compile('[\W_]+')
+
+def create_slug(s):
+  # create url friendly name for source/topic name
+  return slug_pattern.sub('',s)
 
 def create_id_slug(s):
   # strip out non-URL and non-Lucene friendly stuff...
@@ -247,8 +255,10 @@ def analyze_feed_item(item):
     item["summary"]=clean_summary(text)
     
   text = item["title"] + " "+text
-  print 'get_entities' 
-  item['entity']=get_entities(text)
+  print 'get_entities'
+  entities=get_entities(text)
+  item['entity']=entities
+  item['entitykey']=[create_slug(entity) for entity in entities]
   print 'got_entities'
   return item
 
@@ -263,8 +273,9 @@ def copy_attributes(source,dest,names):
 
 def create_solr_doc(item):
   doc={}
-  copy_attributes(item,doc,['title','summary','body','author','feed','feedlink','wing','link','entity'])
+  copy_attributes(item,doc,['title','summary','body','author','feed','feedlink','wing','link','entity','entitykey'])
   d=get_item_date(item)
+  doc['feedkey']=create_slug(doc['feed'])
   if d is not None:
     doc["date"]=d
   doc["id"]=create_id_slug(get_attribute(doc,["link","title"]))

@@ -502,6 +502,8 @@
    <field name="date" type="date" indexed="true" stored="true" default="NOW"/>
    <field name="wing" type="string" indexed="true" stored="true"/>
    <field name="feed" type="string" indexed="true" stored="true"/>
+   <field name="feedkey" type="string" indexed="true" stored="true"/>
+   <field name="entitykey" type="string" indexed="true" stored="true" multiValued="true"/>
    <field name="feedlink" type="string" indexed="true" stored="true"/>
    
    <field name="author" type="string" indexed="true" stored="true"/>
