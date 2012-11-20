@@ -100,8 +100,6 @@
               <li><a href="/">Home</a></li>
               <li class="active"><a href="/topics">Topics</a></li>
               <li><a href="/sources">Sources</a></li>
-              <li><a href="/about">About</a></li>
-              <li><a href="/contact">Contact</a></li>
             </ul>
             <form method="get" action="/" class="navbar-search pull-right">
               <input id="q" size="50" name="q"  type="text" class="search-query" placeholder="Search">
@@ -118,7 +116,12 @@
               <div class="thumbnail">
                   <a class="title" href="/topic/{{topic['key']}}">{{topic['name']}}</a>
                   <p>
-                    This is more info...
+
+              {% for result in topic['results'] %}
+                  <a class="title" href="{{escape(result['link'])}}">{{ result['title'] }}</a>
+              {% end %}
+
+
                   </p>
                 </div>
                   </li>

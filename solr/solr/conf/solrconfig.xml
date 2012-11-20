@@ -709,71 +709,19 @@
     <!-- default values for query parameters can be specified, these
          will be overridden by parameters in the request
       -->
-     <lst name="defaults">
+    <lst name="defaults">
+      <str name="q">*:*</str>
+      <str name="defType">edismax</str>
+      <str name="qf">title^5.0 summary^2.0 body^1.0</str>
+    </lst>
+    <lst name="invariants">
        <str name="echoParams">explicit</str>
-       <int name="rows">10</int>
-	<str name="hl.fragsize">200</str>
-	<str name="hl.fragmenter">regex</str>
-	<str name="hl.regex.slop">0.5</str>
-	<str name="hl.regex.pattern">^[A-Z][^\.!\?]{20,600}[\.!\?]$</str>
-	<str name="hl">false</str>
-	<str name="hl.simple.pre"><![CDATA[<b style="background:yellow">]]></str>
-        <str name="hl.simple.post"><![CDATA[</b>]]></str>
-      <int name="facet.mincount">1</int>
-    
-     </lst>
-    <!-- In addition to defaults, "appends" params can be specified
-         to identify values which should be appended to the list of
-         multi-val params from the query (or the existing "defaults").
-      -->
-    <!-- In this example, the param "fq=instock:true" would be appended to
-         any query time fq params the user may specify, as a mechanism for
-         partitioning the index, independent of any user selected filtering
-         that may also be desired (perhaps as a result of faceted searching).
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "appends" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <!--
-       <lst name="appends">
-         <str name="fq">inStock:true</str>
-       </lst>
-      -->
-    <!-- "invariants" are a way of letting the Solr maintainer lock down
-         the options available to Solr clients.  Any params values
-         specified here are used regardless of what values may be specified
-         in either the query, the "defaults", or the "appends" params.
-
-         In this example, the facet.field and facet.query params would
-         be fixed, limiting the facets clients can use.  Faceting is
-         not turned on by default - but if the client does specify
-         facet=true in the request, these are the only facets they
-         will be able to see counts for; regardless of what other
-         facet.field or facet.query params they may specify.
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "invariants" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <!--
-       <lst name="invariants">
-         <str name="facet.field">cat</str>
-         <str name="facet.field">manu_exact</str>
-         <str name="facet.query">price:[* TO 500]</str>
-         <str name="facet.query">price:[500 TO *]</str>
-       </lst>
-      -->
-    <!-- If the default list of SearchComponents is not desired, that
-         list can either be overridden completely, or components can be
-         prepended or appended to the default list.  (see below)
-      -->
-    <!--
-       <arr name="components">
-         <str>nameOfCustomComponent1</str>
-         <str>nameOfCustomComponent2</str>
-       </arr>
-      -->
+       <int name="rows">20</int>
+        <int name="facet.limit">40</int>     
+        <str name="facet.field">feed,feedkey,entity,entitykey,title</str>
+        <str name="sort">date desc</str>
+        <str name="fl">id,date,link,title,entity,feed,summary</str>
+      </lst>
     </requestHandler>
 
   <!-- A Robust Example
@@ -834,7 +782,7 @@
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>
   </requestHandler>
-    
+
     <requestHandler name="/searchleft" class="solr.SearchHandler">
     <lst name="defaults">
       <str name="q">*:*</str>
@@ -848,10 +796,10 @@
         <int name="facet.limit">20</int>     
         <str name="facet.field">feed,feedkey,entity,entitykey</str>
         <str name="sort">date desc</str>
-        <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>
-  </requestHandler>
+    </requestHandler>
+
 <requestHandler name="/searchright" class="solr.SearchHandler">
 <lst name="defaults">
       <str name="q">*:*</str>
@@ -860,18 +808,16 @@
     </lst>
     <lst name="invariants">
        <str name="echoParams">explicit</str>
-       <int name="rows"10</int>
+       <int name="rows">10</int>
         <str name="fq">wing:right</str>
         <str name="sort">date desc</str>
         <int name="facet.limit">20</int>     
         <str name="facet.field">feed,feedkey,entity,entitykey</str>
-        <!--<str name="fq">date:[NOW-7DAYS TO NOW]</str>-->
         <str name="fl">id,date,link,title,entity,feed,summary</str>
       </lst>
 
 
 </requestHandler>
-
   <!-- XML Update Request Handler.  
        
        http://wiki.apache.org/solr/UpdateXmlMessages

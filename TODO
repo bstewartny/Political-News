@@ -1,3 +1,40 @@
+admin pipeline to approve/blacklist entity tags
+database of entities with type, whitelist and blacklist
+    name:official display name to show and use for tag
+    patterns:list of allowable matched patterns
+    approved:yes|no
+    blacklisted:yes|no
+    type: person,place,organization,thing,topic
+admin page to show all entities:
+    search for them
+    list and sort them
+    filter by approved and blacklisted
+    filter by type
+    add/remove/edit them
+
+allow alternate patterns/merged patterns and wildcards
+when find entities make sure they are approved before tagging...
+
+convert over to django (use sqllite for now)
+use solr 4.0
+
+search result highlighting - match entities used in search, etc.
+
+clustering:
+    use carrot2
+    use MLT
+    use field collapsing
+    create headline cluster field (normalized headline)
+    
+mobile site: adjust for iphone and ipad screens
+    use jquery mobile?
+
+use latest version of javascript/css stuff
+
+show related stories by left/right
+show top left/right facets and tag cloud for left vs. right
+tag cloud on search results (extract words from subjects)
+
 set max # of recent items to load per feed
 fix date parsing (use NOW when date is missing)
 dont show top if missing 
@@ -21,4 +58,13 @@ twitter integration
 more like this:
   show similar items
 filter by source
+
+convert to django - use database for list of feeds, etc.
+run multiple crawler processes - use mod on auto-generated feed id?
+for any headline: show related on left and right
+show left/right icons or colors for each headline and source
+show top facets for left vs. right (show uniques for each one too)
+show pie charts and bar charts for facet counts
+cluster and dedup
+crawl drudge headlines
 

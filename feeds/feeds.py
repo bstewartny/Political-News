@@ -53,13 +53,18 @@ def has_substr(s,a):
       return True
   return False
 
+def all_caps(s):
+    return s.upper()==s
+
 def filter_entities(a):
   u=[]
   a=list(set(a))
   # remove any single-word entities (too ambiguous in most cases)
   a=[s for s in a if len(s.split())>1]
-  # remove any entities more than 3 words
-  a=[s for s in a if len(s.split())<4]
+  # remove any entities more than 2 words
+  a=[s for s in a if len(s.split())<3]
+  # remove any entities that are all CAPS
+  a=[s for s in a if not all_caps(s)]
   a.sort(lambda x,y:cmp(len(y),len(x)))
   a=[x for x in a if not has_substr(x,a)]
   a=[s for s in a if not s.lower() in invalid_entities]
