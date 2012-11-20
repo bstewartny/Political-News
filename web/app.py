@@ -28,17 +28,26 @@ def get_topic_topics(topickey):
   return []
 
 def get_topic_headlines(topickey):
-    r=search(None,topickey,None,None)
-    return r['results']
+    r=simple_search(topickey,None,None)
+    return r[:4]
+
+def get_source_headlines(sourcekey):
+    r=simple_search(None,sourcekey,None)
+    return r[:4]
 
 def get_topics():
   entitysearch=get_handler('/entities')
   entity_results=entitysearch('*:*')
   # for each entity, get top sources...
-  return [{'name':key,'key':feeds.create_slug(key),'sources':get_topic_sources(feeds.create_slug(key)),'topics':get_topic_topics(feeds.create_slug(key)),'results':get_topic_headlines(feeds.create_slug(key))} for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems()]
+  return [{'name':key,
+        'key':feeds.create_slug(key),
+        'results':get_topic_headlines(feeds.create_slug(key))} for key,value in entity_results.facet_counts['facet_fields']['entity'].iteritems()]
 
 def get_sources():
-  return []
+  sources=get_feeds('*:*')
+  return [{'name':key,
+        'key':feeds.create_slug(key),
+        'results':get_source_headlines(feeds.create_slug(key))} for key in sources]
 
 def get_entities(query):
   entitysearch=get_handler('/entities')
@@ -50,6 +59,30 @@ def get_feeds(query):
   feeds_results=feedssearch(query)
   return [key for key,value in feeds_results.facet_counts['facet_fields']['feed'].iteritems()]
 
+def join_query(query,append):
+    if query is None or len(query)==0:
+        return append
+    else:
+        return query + ' '+append
+
+
+def simple_search(topic,source,query):
+
+  search_handler=get_handler('/select')
+  
+  if (topic is not None) or (source is not None):
+    if query is not None and len(query)>0:
+      query='+'+query
+    if topic is not None:
+      query=join_query(query,'+entitykey:'+topic)
+    if source is not None:
+      query=join_query(query,'+feedkey:'+source)
+
+  if query is None or len(query)==0:
+      query="*:*"
+
+  return clean_results_summaries(search_handler(query))
+    
 def search(breadcrumbs,topic,source,query):
   facets=get_entities('*:*')
   sources=get_feeds('*:*')
@@ -61,12 +94,12 @@ def search(breadcrumbs,topic,source,query):
         query='"' + '" OR "'.join(facets[:3])+'"'
   
   if (topic is not None) or (source is not None):
-    if len(query)>0:
+    if query is not None and len(query)>0:
       query='+'+query
     if topic is not None:
-      query=query + ' +entitykey:'+topic
+      query=join_query(query,'+entitykey:'+topic)
     if source is not None:
-      query=query + ' +feedkey:'+source
+      query=join_query(query,'+feedkey:'+source)
 
   results=clean_results_summaries(search_handler(query))
 
@@ -101,7 +134,6 @@ def get_result_words(result):
     summary=result['clean_summary']
     for word in nltk.word_tokenize((title+summary).lower()):
         if not is_noise_word(word):
-            print 'not a noise word: "'+word+'"'
             if word in words:
                 words[word]=words[word]+1
             else:
