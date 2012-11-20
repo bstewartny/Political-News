@@ -22,7 +22,7 @@ INDEX_URL='http://localhost:8983/solr'
 index=solr.Solr(INDEX_URL)
 
 invalid_entities=['tweet text',
-    'white house','continue reading','written by','united states',
+    'daily beast','javascript tag','trademark accessibility','white house','continue reading','written by','united states',
     'new york','new york city','new york times','washington post',
     'raw story','fox news','associated press','wall street','wall street journal','weekly standard']
 
@@ -334,5 +334,4 @@ if __name__ == "__main__":
     thread.start()
     threads.append(thread)
 
-  #process_feeds(feeddefs.feeds)
 

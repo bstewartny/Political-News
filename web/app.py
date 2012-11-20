@@ -128,6 +128,7 @@ def get_top_words(results):
     b.sort()
     return b
 
+
 class SearchHandler(tornado.web.RequestHandler):
   
   def get(self,args):
@@ -161,11 +162,8 @@ class SearchHandler(tornado.web.RequestHandler):
     if len(breadcrumbs)>0:
       breadcrumbs[len(breadcrumbs)-1]['active']=True
 
-
     results=search(breadcrumbs,topic,source,query)
     self.render('templates/index.html',query=query,results=results)
-
-
 
 
 class TopicsHandler(tornado.web.RequestHandler):
@@ -174,21 +172,13 @@ class TopicsHandler(tornado.web.RequestHandler):
     topics=get_topics()
     self.render('templates/topics.html',topics=topics)
 
+
 class SourcesHandler(tornado.web.RequestHandler):
 
   def get(self):
     sources=get_sources()
     self.render('templates/sources.html',sources=sources)
 
-class AutoSuggestHandler(tornado.web.RequestHandler):
-
-  def get(self):
-    prefix=self.get_argument('term','')
-    terms_client=get_handler('/terms')
-    results=terms_client(terms_regex=prefix+'.*')
-    json=[{'id':term,'label':term,'value':'"'+term+'"'} for term in sorted(results.terms['entity'].keys())]
-    self.content_type = 'application/json'
-    self.write(simplejson.dumps(json))
 
 class TypeAheadHandler(tornado.web.RequestHandler):
 
@@ -201,9 +191,8 @@ class TypeAheadHandler(tornado.web.RequestHandler):
     self.write({'options':terms})
     self.finish()
 
-#static_path=os.path.join(os.path.dirname(__file__),"static")
+
 application = tornado.web.Application([
-              (r"/autosuggest",AutoSuggestHandler),
               (r"/typeahead",TypeAheadHandler),
               (r"/topics",TopicsHandler),
               (r"/sources",SourcesHandler),
