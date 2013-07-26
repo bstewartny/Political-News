@@ -6,9 +6,10 @@ import datetime
 import feeddefs
 #import urllib2
 import urllib3
+import entities
 
 import re
-from readability.readability import Document 
+#from readability.readability import Document 
 import subprocess
 import nltk
 import pytz
@@ -27,6 +28,24 @@ invalid_entities=['tweet text',
     'raw story','fox news','associated press','wall street','wall street journal','weekly standard']
 
 invalid_entities.extend([feed['feed'].lower() for feed in feeddefs.feeds])
+
+entity_map={}
+
+def matches_entity(text,entity):
+    text=' '+text.lower()+' '
+    for pattern in entity['patterns']:
+        if text.find(' '+pattern.lower()+' ')>-1:
+            return True
+    return False
+
+def get_entities(text):
+    found=[]
+    for entity in entities.whitelist:
+        if matches_entity(text,entity):
+            found.append(entity['name'])
+    
+    found.extend(get_entities3(text))
+    return found
 
 def extract_entity_names(t):
   entity_names = []
@@ -68,24 +87,35 @@ def filter_entities(a):
   a.sort(lambda x,y:cmp(len(y),len(x)))
   a=[x for x in a if not has_substr(x,a)]
   a=[s for s in a if not s.lower() in invalid_entities]
+  
   return a
 
-def get_entities(text):
-  print 'sent_tokenize'
+
+def get_entities2(text):
+    print 'get_entities: '+text
+    entities=[]
+    for sent in nltk.sent_tokenize(text):
+        for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+            if hasattr(chunk, 'node'):
+                names=extract_entity_names(chunk)
+                if len(names)>0:
+                    print names
+                    entities.extend(names)
+                        
+                #print chunk.node, ' '.join(c[0] for c in chunk.leaves())
+                #entities.append(' '.join(c[0] for c in chunk.leaves()))
+    return filter_entities(entities)
+
+def get_entities3(text):
   sentences = nltk.sent_tokenize(text)
-  print 'word_tokenize'
   tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-  print 'pos_tag'
   tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
-  print 'batch_ne_chunk'
   chunked_sentences = nltk.batch_ne_chunk(tagged_sentences, binary=True)
   
-  print 'extract_entity_names'
   entity_names=[]
   for tree in chunked_sentences:
     entity_names.extend(extract_entity_names(tree))
 
-  print 'filter_entities'
   return filter_entities(entity_names)
 
 def get_text_lynx(data):
@@ -108,12 +138,9 @@ def get_page_text(url):
     print 'Get url:',url
     r=http.request('GET',url)
     data=r.data
-    print 'Got url:',url
     #data = urllib2.urlopen(url).read()
     if not data is None and len(data)>0:
-      print 'get summary'
-      summary=Document(data).summary()
-      print 'got summary'
+      summary=data #Document(data).summary()
       return strip_html_tags(summary)
   except:
     print 'error getting text from url: '+url
@@ -144,7 +171,6 @@ def create_id_slug(s):
   return compress_underscores(replace_bad_chars(s.strip().replace('http://','').replace('https://','')))	
 
 def strip_html_tags(html):
-  print 'strip_html_tags'
   # just get appended text elements from HTML
   try:
     text="".join(BeautifulSoup(html,convertEntities=BeautifulSoup.HTML_ENTITIES).findAll(text=True))
@@ -247,24 +273,25 @@ def analyze_feed_item(item):
 
   link=item['link']
   text=summary
-  if len(link)>0:
-    print 'Get extracted text: '+link
-    text=get_page_text(link)
-    if text is None or len(summary)>len(text):
-      text=summary
-    item["body"]=text
-  else:
-    item["body"]=summary
+  #if len(link)>0:
+  #  print 'Get extracted text: '+link
+  #  text=get_page_text(link)
+  #  if text is None or len(summary)>len(text):
+  #    text=summary
+  #  item["body"]=text
+  #else:
+  item["body"]=summary
 
   if item["summary"] is None or len(item["summary"])==0:
     item["summary"]=clean_summary(text)
     
-  text = item["title"] + " "+text
-  print 'get_entities'
+  text = item["title"] 
+  print text
   entities=get_entities(text)
+  if len(entities)>0:
+      print entities
   item['entity']=entities
   item['entitykey']=[create_slug(entity) for entity in entities]
-  print 'got_entities'
   return item
 
 def copy_attribute(source,dest,name):
@@ -326,12 +353,16 @@ num_threads=4
 
 if __name__ == "__main__":
   feeds=feeddefs.feeds
-  batch_size=len(feeds)/num_threads
-  threads=[]
-  for i in range(0,num_threads):
-    batch=feeds[i*batch_size:(i*batch_size)+batch_size]
-    thread=Thread(target=process_feeds,args=(batch,))
-    thread.start()
-    threads.append(thread)
+
+  process_feeds(feeds)
+  
+  #batch_size=len(feeds)/num_threads
+  #
+  #threads=[]
+  #for i in range(0,num_threads):
+  #  batch=feeds[i*batch_size:(i*batch_size)+batch_size]
+  #  thread=Thread(target=process_feeds,args=(batch,))
+  #  thread.start()
+  #  threads.append(thread)
 
 

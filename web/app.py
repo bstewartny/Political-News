@@ -7,18 +7,23 @@ from tornado.template import Template
 import simplejson
 import operator
 import nltk
+import feeddefs
 
 SOLR_URL='http://localhost:8983/solr'
 client=solr.Solr(SOLR_URL) 
 
 def get_handler(name):
-  return solr.SearchHandler(client,name)
+    print 'get_handler: '+name
+    return solr.SearchHandler(client,name)
 
 def clean_results_summaries(results):
   return [clean_result_summary(result) for result in results.results]
 
 def clean_result_summary(result):
-  result['clean_summary']=feeds.clean_summary(result['summary'])
+  if 'summary' in result:
+    result['clean_summary']=feeds.clean_summary(result['summary'])
+  else:
+    result['clean_summary']=''
   return result
 
 def get_topic_sources(topickey):
@@ -131,13 +136,14 @@ def is_noise_word(word):
 def get_result_words(result):
     words={}
     title=result['title']
-    summary=result['clean_summary']
-    for word in nltk.word_tokenize((title+summary).lower()):
-        if not is_noise_word(word):
-            if word in words:
-                words[word]=words[word]+1
-            else:
-                words[word]=1
+    if 'clean_summary' in result:
+        summary=result['clean_summary']
+        for word in nltk.word_tokenize((title+summary).lower()):
+            if not is_noise_word(word):
+                if word in words:
+                    words[word]=words[word]+1
+                else:
+                    words[word]=1
     return words
 
 MAX_TOP_WORDS=60
@@ -224,12 +230,46 @@ class TypeAheadHandler(tornado.web.RequestHandler):
     self.finish()
 
 
+queue=[]
+
+class ReadQueue(tornado.web.RequestHandler):
+
+    def get(self):
+        # read 1 feed item from queue
+        self.set_header("Content-Type", "application/json")
+        resp=None
+        if len(queue)>0:
+            try:
+                resp=queue.pop()
+            except:
+                print 'error reading queue'
+                resp=None
+        else:
+            print 'queue empty'
+    
+        json=simplejson.JSONEncoder().encode(resp)
+        self.write(json)
+        self.finish()
+
+class FillQueue(tornado.web.RequestHandler):
+
+    def get(self):
+        # fill queue
+        print 'filling queue'
+        #queue=[]
+        queue.extend(feeddefs.feeds)
+        print 'queue length='+str(len(queue))
+
+
+
 application = tornado.web.Application([
               (r"/typeahead",TypeAheadHandler),
               (r"/topics",TopicsHandler),
               (r"/sources",SourcesHandler),
+              (r"/read1feed",ReadQueue),
+              (r"/fillfeedq",FillQueue),
               (r"/(.*)", SearchHandler)],
-              static_path='/Users/bstewart/Political-News/web/static/'
+              static_path='/Users/bstewart/Documents/Political-News/web/static/'
               )
 
 if __name__ == "__main__":
